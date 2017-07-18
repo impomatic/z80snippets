@@ -1,6 +1,6 @@
 ; fast 16 bit isqrt by John Metcalf
-; 92 bytes
-; 348-381 cycles (average 365)
+; 92 bytes, 344-379 cycles (average 362)
+; v2 - saved 3 cycles with a tweak suggested by Russ McNulty
 
 ; call with hl = number to square root
 ; returns    a = square root
@@ -58,36 +58,39 @@ sq4:
 sq3:
   sbc hl,de     ; 15
   sra d         ; 8
-  rr e          ; 8
+  ld a,e        ; 4
+  rra           ; 4
 
 ; ----------
 
-  set 4,e       ; 8
+  or 010h       ; 7
+  ld e,a        ; 4
   add hl,de     ; 11
   jr nc,sq2     ; 12 / 7
-  res 5,e       ; 8
-  db 210        ; 10
+  and 0DFh      ; 7
+  db 218        ; 10
 sq2:
   sbc hl,de     ; 15
   sra d         ; 8
-  rr e          ; 8
+  rra           ; 4
 
 ; ----------
 
-  set 2,e       ; 8
+  or 04h        ; 7
+  ld e,a        ; 4
   add hl,de     ; 11
   jr nc,sq1     ; 12 / 7
-  res 3,e       ; 8
-  db 210        ; 10
+  and 0F7h      ; 7
+  db 218        ; 10
 sq1:
   sbc hl,de     ; 15
   sra d         ; 8
-  rr e          ; 8
+  rra           ; 4
 
 ; ----------
 
-  inc e         ; 4
-  ld a,e        ; 4
+  inc a         ; 4
+  ld e,a        ; 4
   add hl,de     ; 11
   jr nc,sq0     ; 12 / 7
   and 0FDh      ; 7
