@@ -1,4 +1,4 @@
-; set bit a (0..15) of the bc register (bc = 2^a)
+; set bit a (0..15) of the bc register (bc |= 2^a)
 ; self-modifying code
 
   rlca
