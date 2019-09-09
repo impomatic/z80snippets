@@ -1,100 +1,83 @@
-; fast 16 bit isqrt by John Metcalf
-; 89 bytes, 335-375 cycles (average 355.5)
-; v2 - saved 3 cycles with a tweak suggested by Russ McNulty
+; fast 16-bit isqrt by Zeda Thomas
+; 87 bytes, 333-370 clock cycles (average 351.5)
 
 ; call with hl = number to square root
 ; returns    a = square root
 ; corrupts hl, de
 
-; ----------
-
-  ld a,h        ; 4
-  ld de,0B0C0h  ; 10
-  add a,e       ; 4
-  jr c,sq7      ; 12 / 7
-  ld a,h        ; 4
-  ld d,0F0h     ; 7
+  ld de,05040h
+  ld a,h
+  sub e
+  jr nc,sq7
+  add a,e
+  ld d,16
 sq7:
 
-; ----------
 
-  add a,d       ; 4
-  jr nc,sq6     ; 12 / 7
-  res 5,d       ; 8
-  db 254        ; 7
+  cp d
+  jr c,sq6
+  sub d
+  set 5,d
 sq6:
-  sub d         ; 4
-  sra d         ; 8
+  res 4,d
+  srl d
 
-; ----------
-
-  set 2,d       ; 8
-  add a,d       ; 4
-  jr nc,sq5     ; 12 / 7
-  res 3,d       ; 8
-  db 254        ; 7
+  set 2,d
+  cp d
+  jr c,sq5
+  sub d
+  set 3,d
 sq5:
-  sub d         ; 4
-  sra d         ; 8
+  srl d
 
-; ----------
 
-  inc d         ; 4
-  add a,d       ; 4
-  jr nc,sq4     ; 12 / 7
-  res 1,d       ; 8
-  db 254        ; 7
+  inc a
+  sub d
+  jr nc,sq4
+  dec d
+  add a,d
+  dec d   ;this resets the low bit of D, so `srl d` resets carry.
 sq4:
-  sub d         ; 4
-  sra d         ; 8
-  ld h,a        ; 4
 
-; ----------
+  srl d
+  ld h,a
 
-  xor a         ; 4
-  add hl,de     ; 11
-  jr c,sq3      ; 12 / 7
-  sbc hl,de     ; 15
+
+  sbc hl,de
+  ld a,e
+  jr nc,sq3
+  add hl,de
 sq3:
-  rra           ; 4
-  add a,e       ; 4
-  sra d         ; 8
-  rra           ; 4
+  ccf
+  rra
+  srl d
+  rra
+  ld e,a
 
-; ----------
-
-  or 010h       ; 7
-  ld e,a        ; 4
-  add hl,de     ; 11
-  jr nc,sq2     ; 12 / 7
-  and 0DFh      ; 7
-  db 218        ; 10
+  sbc hl,de
+  jr c,sq2
+  or 20h
+  db 254   ;start of `cp *` which is 7cc to skip the next byte.
 sq2:
-  sbc hl,de     ; 15
-  sra d         ; 8
-  rra           ; 4
+  add hl,de
+  xor 18h
+  srl d
+  rra
+  ld e,a
 
-; ----------
 
-  or 04h        ; 7
-  ld e,a        ; 4
-  add hl,de     ; 11
-  jr nc,sq1     ; 12 / 7
-  and 0F7h      ; 7
-  db 218        ; 10
+  sbc hl,de
+  jr c,sq1
+  or 8
+  db 254   ;start of `cp *` which is 7cc to skip the next byte.
 sq1:
-  sbc hl,de     ; 15
-  sra d         ; 8
-  rra           ; 4
+  add hl,de
+  xor 6
+  srl d
+  rra
+  ld e,a
+  sbc hl,de
 
-; ----------
-
-  ld e,a        ; 4
-  inc e         ; 4
-  add hl,de     ; 11
-  sbc a,0       ; 7
-  sra d         ; 8
-  rra           ; 4
-  cpl           ; 4
-
-; ----------
+ sbc a,255
+ srl d
+ rra
