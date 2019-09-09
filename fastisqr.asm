@@ -1,5 +1,5 @@
 ; fast 16 bit isqrt by John Metcalf
-; 92 bytes, 344-379 cycles (average 362)
+; 89 bytes, 335-375 cycles (average 355.5)
 ; v2 - saved 3 cycles with a tweak suggested by Russ McNulty
 
 ; call with hl = number to square root
