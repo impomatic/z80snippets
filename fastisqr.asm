@@ -51,14 +51,14 @@ sq4:
 
 ; ----------
 
+  xor a         ; 4
   add hl,de     ; 11
-  jr nc,sq3     ; 12 / 7
-  ld e,040h     ; 7
-  db 210        ; 10
-sq3:
+  jr c,sq3      ; 12 / 7
   sbc hl,de     ; 15
+sq3:
+  rra           ; 4
+  add a,e       ; 4
   sra d         ; 8
-  ld a,e        ; 4
   rra           ; 4
 
 ; ----------
@@ -89,12 +89,10 @@ sq1:
 
 ; ----------
 
-  inc a         ; 4
   ld e,a        ; 4
+  inc e         ; 4
   add hl,de     ; 11
-  jr nc,sq0     ; 12 / 7
-  and 0FDh      ; 7
-sq0:
+  sbc a,0       ; 7
   sra d         ; 8
   rra           ; 4
   cpl           ; 4
