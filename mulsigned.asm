@@ -1,5 +1,8 @@
 ; 16 bit signed multiply by John Metcalf
-; 32 bytes, average approx ~1090 cycles
+;31 bytes
+;min: 928cc
+;max: 1257cc
+;avg: 1088.5cc
 
 ; call with bc, de = 16 bit signed numbers to multiply
 ; returns   de:hl = 32 bit signed product
@@ -15,13 +18,13 @@ multiply:
   jr z,muldpos
   sbc hl,bc
 muldpos:
-  ld a,b
-  sra a
-  and 0C0h
-  add a,d
-  ld d,a
 
-  ld a,16
+  or b
+  jp p,mulbpos
+  sbc hl,bc
+mulbpos:
+
+ld a,16
 mulloop:
   add hl,hl
   rl e
