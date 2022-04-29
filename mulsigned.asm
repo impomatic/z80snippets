@@ -21,7 +21,7 @@ muldpos:
 
   or b
   jp p,mulbpos
-  sbc hl,bc
+  sbc hl,de
 mulbpos:
 
 ld a,16
