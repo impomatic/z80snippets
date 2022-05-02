@@ -1,6 +1,5 @@
-; fast 16 bit isqrt by John Metcalf
-; 92 bytes, 344-379 cycles (average 362)
-; v2 - saved 3 cycles with a tweak suggested by Russ McNulty
+; fast 16-bit isqrt by Zeda Thomas
+; 87 bytes, 333-370 clock cycles (average 351.5)
 
 ; call with hl = number to square root
 ; returns    a = square root
@@ -8,95 +7,89 @@
 
 ; ----------
 
+  ld de,05040h  ; 10
   ld a,h        ; 4
-  ld de,0B0C0h  ; 10
-  add a,e       ; 4
-  jr c,sq7      ; 12 / 7
-  ld a,h        ; 4
-  ld d,0F0h     ; 7
-sq7:
+  sub e         ; 4
+  jr nc,sq7     ;\
+  add a,e       ; | branch 1: 12cc
+  ld d,16       ; | branch 2: 18cc
+sq7:            ;/
 
 ; ----------
 
-  add a,d       ; 4
-  jr nc,sq6     ; 12 / 7
-  res 5,d       ; 8
-  db 254        ; 7
-sq6:
-  sub d         ; 4
-  sra d         ; 8
+  cp d          ; 4
+  jr c,sq6      ;\
+  sub d         ; | branch 1: 12cc
+  set 5,d       ; | branch 2: 19cc
+sq6:            ;/
 
 ; ----------
-
+  res 4,d       ; 8
+  srl d         ; 8
   set 2,d       ; 8
-  add a,d       ; 4
-  jr nc,sq5     ; 12 / 7
-  res 3,d       ; 8
-  db 254        ; 7
-sq5:
-  sub d         ; 4
-  sra d         ; 8
-
-; ----------
-
-  inc d         ; 4
-  add a,d       ; 4
-  jr nc,sq4     ; 12 / 7
-  res 1,d       ; 8
-  db 254        ; 7
-sq4:
-  sub d         ; 4
-  sra d         ; 8
-  ld h,a        ; 4
-
-; ----------
-
-  add hl,de     ; 11
-  jr nc,sq3     ; 12 / 7
-  ld e,040h     ; 7
-  db 210        ; 10
-sq3:
-  sbc hl,de     ; 15
-  sra d         ; 8
-  ld a,e        ; 4
-  rra           ; 4
-
-; ----------
-
-  or 010h       ; 7
-  ld e,a        ; 4
-  add hl,de     ; 11
-  jr nc,sq2     ; 12 / 7
-  and 0DFh      ; 7
-  db 218        ; 10
-sq2:
-  sbc hl,de     ; 15
-  sra d         ; 8
-  rra           ; 4
-
-; ----------
-
-  or 04h        ; 7
-  ld e,a        ; 4
-  add hl,de     ; 11
-  jr nc,sq1     ; 12 / 7
-  and 0F7h      ; 7
-  db 218        ; 10
-sq1:
-  sbc hl,de     ; 15
-  sra d         ; 8
-  rra           ; 4
+  cp d          ; 4
+  jr c,sq5      ;\
+  sub d         ; | branch 1: 12cc
+  set 3,d       ; | branch 2: 19cc
+sq5:            ;/
+  srl d         ; 8
 
 ; ----------
 
   inc a         ; 4
-  ld e,a        ; 4
-  add hl,de     ; 11
-  jr nc,sq0     ; 12 / 7
-  and 0FDh      ; 7
-sq0:
-  sra d         ; 8
-  rra           ; 4
-  cpl           ; 4
+  sub d         ; 4
+  jr nc,sq4     ;\
+  dec d         ; | branch 1: 12cc
+  add a,d       ; | branch 2: 19cc
+  dec d         ; | <-- this resets the low bit of D, so `srl d` resets carry.
+sq4:            ;/
+  srl d         ; 8
+  ld h,a        ; 4
 
 ; ----------
+
+  ld a,e        ; 4
+  sbc hl,de     ; 15
+  jr nc,sq3     ;\
+  add hl,de     ; | 12cc or 18cc
+sq3:            ;/
+  ccf           ; 4
+  rra           ; 4
+  srl d         ; 8
+  rra           ; 4
+
+; ----------
+
+  ld e,a        ; 4
+  sbc hl,de     ; 15
+  jr c,sq2      ;\
+  or 20h        ; | branch 1: 23cc
+  db 254        ; |   <-- start of `cp *` which is 7cc to skip the next byte.
+sq2:            ; | branch 2: 21cc
+  add hl,de     ;/
+
+  xor 18h       ; 7
+  srl d         ; 8
+  rra           ; 4
+
+; ----------
+
+  ld e,a        ; 4
+  sbc hl,de     ; 15
+  jr c,sq1      ;\
+  or 8          ; | branch 1: 23cc
+  db 254        ; |   <-- start of `cp *` which is 7cc to skip the next byte.
+sq1:            ; | branch 2: 21cc
+  add hl,de     ;/
+
+  xor 6         ; 7
+  srl d         ; 8
+  rra           ; 4
+
+; ----------
+
+  ld e,a        ; 4
+  sbc hl,de     ; 15
+  sbc a,255     ; 7
+  srl d         ; 8
+  rra           ; 4
