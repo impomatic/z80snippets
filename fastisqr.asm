@@ -1,5 +1,8 @@
-; fast 16-bit isqrt by Zeda Thomas
+; fast 16-bit isqrt by Zeda Thomas and John Metcalf
 ; 87 bytes, 333-370 clock cycles (average 351.5)
+
+; original was 92 bytes, 344-379 cycles (average 362)
+; http://www.retroprogramming.com/2017/07/a-fast-z80-integer-square-root.html
 
 ; call with hl = number to square root
 ; returns    a = square root
