@@ -1,5 +1,5 @@
 ; draw lines using self-modifying Bresenham's algorithm
-; by John Metcalf and Arcadiy Gobuzov
+; by Arcadiy Gobuzov and John Metcalf
 ; de = end1 (d = x-axis, e = y-axis)
 ; hl = end2 (h = x-axis, l = y-axis)
 
